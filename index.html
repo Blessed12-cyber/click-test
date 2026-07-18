@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mouse Click Speed Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f4f4f9; padding: 20px; }
+        #click-area { width: 300px; height: 200px; line-height: 200px; background: #007bff; color: white; font-size: 24px; font-weight: bold; margin: 20px auto; border-radius: 10px; cursor: pointer; user-select: none; }
+        #click-area:active { background: #0056b3; }
+        .score-box { font-size: 20px; margin: 10px; }
+    </style>
+</head>
+<body>
+
+    <h1>Click Speed Test (CPS)</h1>
+    <p>Click the blue box as fast as you can to start the 5-second test!</p>
+
+    <div id="click-area">CLICK HERE</div>
+    
+    <div class="score-box">Timer: <span id="timer">5</span>s</div>
+    <div class="score-box">Clicks: <span id="clicks">0</span></div>
+    <div class="score-box">CPS (Clicks Per Second): <span id="cps">0.00</span></div>
+
+    <script>
+        let clicks = 0;
+        let timeLeft = 5;
+        let timerStarted = false;
+        let interval;
+
+        const clickArea = document.getElementById('click-area');
+        const timerDisplay = document.getElementById('timer');
+        const clicksDisplay = document.getElementById('clicks');
+        const cpsDisplay = document.getElementById('cps');
+
+        clickArea.addEventListener('click', () => {
+            if (!timerStarted) {
+                timerStarted = true;
+                interval = setInterval(() => {
+                    timeLeft -= 0.1;
+                    timerDisplay.textContent = timeLeft.toFixed(1);
+                    if (timeLeft <= 0) {
+                        clearInterval(interval);
+                        clickArea.style.pointerEvents = 'none';
+                        clickArea.textContent = "Test Finished!";
+                        cpsDisplay.textContent = (clicks / 5).toFixed(2);
+                    }
+                }, 100);
+            }
+            if (timeLeft > 0) {
+                clicks++;
+                clicksDisplay.textContent = clicks;
+            }
+        });
+    </script>
+</body>
+</html>

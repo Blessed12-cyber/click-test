@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro CPS Test - Mouse Click Speed Trainer</title>
+    <style>
+        :root {
+            --bg-main: #1e1e24;
+            --bg-card: #2a2a35;
+            --accent: #00e676;
+            --accent-hover: #00b359;
+            --text-main: #ffffff;
+            --text-muted: #9e9e9e;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .dashboard {
+            width: 100%;
+            max-width: 700px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid #3a3a4a;
+        }
+
+        h1 { font-size: 2rem; margin-bottom: 5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .subtitle { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px; }
+
+        /* Stats Grid Layout */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            text-align: center;
+        }
+
+        .stat-val { font-size: 1.8rem; font-weight: bold; color: var(--accent); }
+        .stat-lbl { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-top: 5px; }
+
+        /* Click Target Area */
+        #click-pad {
+            width: 100%;
+            height: 240px;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.05s ease, box-shadow 0.1s;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+            border: 2px solid rgba(255,255,255,0.05);
+        }
+
+        #click-pad:active {
+            transform: scale(0.98);
+            background: linear-gradient(135deg, #1a252f, #2980b9);
+        }
+
+        #click-pad.finished {
+            background: #27ae60 !important;
+            cursor: not-allowed;
+        }
+
+        /* Controls & Action Items */
+        .controls {
+            margin-top: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 12px 28px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover { background: var(--accent-hover); }
+
+        .time-select {
+            background: #111;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 10px;
+            border-radius: 8px;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <h1>Pro Click Speed Trainer</h1>
+    <div class="subtitle">Calibrate and test your competitive execution speed.</div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div id="timer" class="stat-val">5.00</div>
+            <div class="stat-lbl">Time Left (s)</div>
+        </div>
+        <div class="stat-card">
+            <div id="clicks" class="stat-val">0</div>
+            <div class="stat-lbl">Total Clicks</div>
+        </div>
+        <div class="stat-card">
+            <div id="cps" class="stat-val">0.0</div>
+            <div class="stat-lbl">Live CPS</div>
+        </div>
+    </div>
+
+    <div id="click-pad">TAP HERE TO RUN TEST</div>
+
+    <div class="controls">
+        <select id="time-picker" class="time-select" onchange="changeDuration()">
+            <option value="1">1 Second Test</option>
+            <option value="5" selected>5 Second Test</option>
+            <option value="10">10 Second Test</option>
+        </select>
+        <button class="btn" onclick="resetEngine()">Restart</button>
+    </div>
+</div>
+
+<script>
+    let clicks = 0;
+    let duration = 5.0;
+    let timeLeft = 5.0;
+    let running = false;
+    let tracker;
+
+    const pad = document.getElementById('click-pad');
+    const timerText = document.getElementById('timer');
+    const clicksText = document.getElementById('clicks');
+    const cpsText = document.getElementById('cps');
+    const picker = document.getElementById('time-picker');
+
+    function changeDuration() {
+        if (!running) {
+            duration = parseFloat(picker.value);
+            resetEngine();
+        }
+    }
+
+    pad.addEventListener('mousedown', (e) => {
+        if (timeLeft <= 0) return;
+        
+        if (!running) {
+            running = true;
+            picker.disabled = true;
+            pad.textContent = "CLICK FAST!";
+            
+            tracker = setInterval(() => {
+                timeLeft -= 0.01;
+                if (timeLeft <= 0) {
+                    clearInterval(tracker);
+                    timeLeft = 0;
+                    running = false;
+                    pad.classList.add('finished');
+                    pad.textContent = "TEST COMPLETE";
+                    cpsText.textContent = (clicks / duration).toFixed(2);
+                }
+                timerText.textContent = timeLeft.toFixed(2);
+            }, 10);
+        }
+
+        if (timeLeft > 0) {
+            clicks++;
+            clicksText.textContent = clicks;
+            let elapsed = duration - timeLeft;
+            if(elapsed > 0) {
+                cpsText.textContent = (clicks / elapsed).toFixed(1);
+            }
+        }
+    });
+
+    function resetEngine() {
+        clearInterval(tracker);
+        clicks = 0;
+        running = false;
+        timeLeft = duration;
+        picker.disabled = false;
+        
+        pad.classList.remove('finished');
+        pad.textContent = "TAP HERE TO RUN TEST";
+        timerText.textContent = duration.toFixed(2);
+        clicksText.textContent = "0";
+        cpsText.textContent = "0.0";
+    }
+</script>
+
+</body>
+</html>
